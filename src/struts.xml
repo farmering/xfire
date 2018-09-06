@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN" "http://struts.apache.org/dtds/struts-2.0.dtd">
+<struts>
+
+	<!-- 是否显示详细错误信息 -->
+	<constant name="struts.devMode" value="false" />
+	<!-- 国际化资源文件名称 -->
+	<constant name="struts.custom.i18n.resources" value="i18n" />
+	<!-- 是否自动加载国际化资源文件  -->
+	<constant name="struts.i18n.reload" value="false" />
+	<!-- convention类重新加载 -->
+	<constant name="struts.convention.classes.reload" value="false" />
+	<!-- 浏览器是否缓存静态内容 -->
+	<constant name="struts.serve.static.browserCache" value="true" />
+	<!-- 配置使用Spring管理Action -->
+	<constant name="struts.objectFactory" value="spring" />
+	<!-- 上传文件大小限制设置 -->
+	<constant name="struts.multipart.maxSize" value="-1" />
+	<!-- 主题 -->
+	<constant name="struts.ui.theme" value="simple" />
+	<constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+	<!-- 编码 -->
+	<constant name="struts.i18n.encoding" value="UTF-8" />
+	<!-- 后缀 -->
+    <constant name="struts.action.extension" value="action,,xml,json" />
+	<!-- 结果资源的路径 -->
+	<constant name="struts.convention.result.path" value="/WEB-INF/template/" />
+	<!-- URL资源分隔符 -->
+	<constant name="struts.convention.action.name.separator" value="_" />
+	
+	<package name="basePackage" extends="struts-default">
+		<interceptors>
+			<!-- 过滤JSON
+			<interceptor name="json" class="org.apache.struts2.json.JSONInterceptor"/>
+			<interceptor name="jsonValidation" class="org.apache.struts2.json.JSONValidationInterceptor"/>
+			 -->
+			<interceptor name="trimInterceptor" class="com.sdjz.eshop.common.TrimInterceptor" /><!-- trim拦截器 -->
+			<interceptor name="loginInterceptor" class="com.sdjz.eshop.common.LoginInterceptor" /><!-- 登录验证过滤器 -->
+			<interceptor name="resourceInterceptor" class="com.sdjz.eshop.common.ResourceInterceptor" /><!-- 配置资源权限过滤器 -->
+			
+            <!-- 后台管理拦截器栈 -->
+            <interceptor-stack name="adminStack">
+            	<!-- 
+            	<interceptor-ref name="json"/>
+            	<interceptor-ref name="jsonValidation"/>
+            	 -->
+				<interceptor-ref name="loginInterceptor" />
+				<interceptor-ref name="resourceInterceptor" />
+				<interceptor-ref name="trimInterceptor" />
+				<interceptor-ref name="defaultStack" />
+			</interceptor-stack>
+			 <!-- 系统登录拦截器栈 -->
+			<interceptor-stack name="loginStack">
+				<!-- trim拦截器 -->
+				<interceptor-ref name="trimInterceptor" />
+				<interceptor-ref name="defaultStack" />
+			</interceptor-stack>
+            
+		</interceptors>
+
+		<!-- 配置默认拦截器栈 -->
+		<default-interceptor-ref name="defaultStack" />
+		<!-- 未到找Action指向页面 -->
+		<default-action-ref name="errorPage" />
+		<global-results>
+			<result name="error" type="freemarker">/WEB-INF/template/common/error.ftl</result>
+			<result name="success" type="freemarker">/WEB-INF/template/common/success.ftl</result>
+			<result name="noresource" type="freemarker">/WEB-INF/template/common/noresource.ftl</result>
+			<result name="nologin" type="redirect">/index.html</result>
+			<result name="excel" type="stream">
+                <param name="contentType">application/vnd.ms-excel</param>  
+                <param name="contentDisposition">attachment;filename="${excelFileName}"</param>  
+                <param name="bufferSize">1024</param>
+                <param name="inputName">excelFile</param>  
+            </result>
+		</global-results>
+
+		<action name="errorPage">
+			<result type="redirect">/html/404.html</result>
+		</action>
+		<!-- 文件下载时候判断文件是否存在，并跳转到download -->
+	 	<action name="downloadFile" class="com.sdjz.eshop.action.file.DownloadAction">  
+           <result  type="chain">download</result>
+   	 	</action>
+		<action name="download" class="com.sdjz.eshop.action.file.UpDownloadAction">  
+           <result type="stream">
+               <param name="contentType">application/octet-stream</param>
+               <param name="inputName">downloadFile</param>
+               <param name="contentDisposition">attachment;fileName="${fileName}"</param>  
+               <param name="bufferSize">1024</param>
+           </result>
+       </action>
+	</package>
+
+	<package name="admin" extends="basePackage" namespace="/">
+		<!-- 配置默认拦截器栈 -->
+		<default-interceptor-ref name="adminStack" />
+	</package>
+	
+	<package name="login" extends="basePackage" >
+		<!-- 配置默认拦截器栈 -->
+		<default-interceptor-ref name="loginStack" />
+	</package>
+</struts>

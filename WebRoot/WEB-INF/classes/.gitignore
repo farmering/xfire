@@ -1,0 +1,14 @@
+/apache-common-email.properties
+/applicationContext-time.xml
+/applicationContext.xml
+/com/
+/ehcache.xml
+/filePath.properties
+/freemarker.properties
+/i18n_en_US.properties
+/i18n_zh_CN.properties
+/jdbc.properties
+/log4j.properties
+/oscache.properties
+/shopxx_init.xml
+/struts.xml
